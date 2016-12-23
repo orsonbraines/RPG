@@ -1,0 +1,11 @@
+000001knife:;
+000002torch:;
+000003copperOre:;
+000004tinOre:;
+000005ironOre:;
+000006coalOre:;
+000007aluminumOre:;
+000008silverOre:;
+000009goldOre:;
+00000AplatinumOre:;
+00000BtitaniumOre:;
