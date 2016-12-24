@@ -5,8 +5,7 @@ import javafx.scene.image.Image;
 /**
  * Created by obrai on 2016-12-22.
  */
-public class GameObject {
-    String description;
+public class GameObject extends GameEntity{
     int value;
     Image image;
 
