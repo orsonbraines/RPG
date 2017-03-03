@@ -14,7 +14,8 @@ public class DataHeader {
         type = info & 0xf;
         switch(type){
             case TYPE_STRING:
-                dataSize = (type >>> 4) + 2;
+                dataSize = info >>> 4;
+                if(dataSize <= 2) throw new IllegalArgumentException("size must be > 2");
                 break;
             case TYPE_DOUBLE:
                 dataSize = Database.DOUBLE_SIZE;

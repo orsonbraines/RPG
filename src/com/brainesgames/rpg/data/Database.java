@@ -23,6 +23,7 @@ public class Database {
     DataHeader[] headers;
 
     Database(String fileName, DataHeader... headers) throws IOException{
+        if(headers.length == 0) throw new IllegalArgumentException("There must be at least one header");
         File file = new File(fileName);
         if(file.exists()) throw new IllegalArgumentException(fileName + " already exists");
         raf = new RandomAccessFile(file, "rw");
@@ -50,7 +51,7 @@ public class Database {
         for(int i=0;i<headers.length;i++) headers[i] = headersList.get(i);
 
         dataOffset = nextHeaderStart + INT_SIZE;
-        dataSize = 0;
+        dataSize = INT_SIZE;
         for(int i=0;i<headers.length;i++) {
             dataSize += headers[i].getDataSize();
         }
@@ -71,25 +72,66 @@ public class Database {
             raf.writeUTF(headers[i].getName());
             nextHeaderStart += headers[i].getSize();
         }
+        //END headers
         raf.seek(nextHeaderStart);
+        raf.writeInt(END_OF_SECTION);
+        //NO data
+        raf.seek(nextHeaderStart + INT_SIZE);
         raf.writeInt(END_OF_SECTION);
         dataOffset = nextHeaderStart + INT_SIZE;
         dataCount = 0;
-        dataSize = 0;
+        dataSize = INT_SIZE;
         for(int i=0;i<headers.length;i++) {
             dataSize += headers[i].getDataSize();
         }
     }
 
-    Object[] get(int id){
+    long dataPos(int idx){
+        return dataOffset + idx * dataSize;
+    }
+
+    //TODO change Object[] to dataRow
+    //TODO add r/rw
+    //TODO add add(Row) method
+
+    Object[] get(int id) throws IOException{
+        for(int i=0;i<dataCount;i++){
+            long offset = dataPos(i);
+            raf.seek(offset);
+            int dataId = raf.readInt();
+            if(id == dataId){
+                Object[] data = new Object[headers.length + 1];
+                data[0] = dataId;
+                offset += INT_SIZE;
+                for(int j=1;j<=headers.length;j++){
+                    raf.seek(offset);
+                    switch(headers[j].getType()){
+                        case DataHeader.TYPE_STRING:
+                            data[j] = raf.readUTF();
+                            break;
+                        case DataHeader.TYPE_INT:
+                            data[j] = raf.readInt();
+                            break;
+                        case DataHeader.TYPE_DOUBLE:
+                            data[j] = raf.readDouble();
+                            break;
+                    }
+                    offset += headers[j].getDataSize();
+                }
+                return data;
+            }
+        }
         return null;
     }
 
     Object[][] getAll() throws IOException{
-        Object[][] data = new Object[dataCount][headers.length];
+        Object[][] data = new Object[dataCount][headers.length + 1];
         long offset = dataOffset;
         for(int i=0;i<dataCount;i++){
-            for(int j=0;j<headers.length;j++){
+            raf.seek(offset);
+            //id
+            data[i][0] = raf.readInt();
+            for(int j=1;j<=headers.length;j++){
                 raf.seek(offset);
                 switch(headers[j].getType()){
                     case DataHeader.TYPE_STRING:
@@ -110,6 +152,27 @@ public class Database {
 
     public void close() throws IOException {
         raf.close();
+    }
+
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("(id, ");
+        for(int i=0;i<headers.length;i++) sb.append(headers[i].getName()).append(", ");
+        sb.append(")\n");
+        try {
+            Object[][] data = getAll();
+            for(int i=0;i<data.length;i++){
+                sb.append("{");
+                for(int j=0; j<data[0].length;j++){
+                    sb.append(data[i][j]).append(", ");
+                }
+                sb.append("}\n");
+            }
+        }
+        catch (IOException ex){
+            ex.printStackTrace();
+        }
+        return sb.toString();
     }
 
     //size includes 2 bytes
