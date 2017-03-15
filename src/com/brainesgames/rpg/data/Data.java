@@ -1,7 +1,6 @@
 package com.brainesgames.rpg.data;
 
-import com.brainesgames.rpg.GameEntity;
-import com.brainesgames.rpg.ID;
+import com.brainesgames.rpg.*;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -41,12 +40,32 @@ public class Data {
     }
     
     GameEntity get(ID id){
+        int category = id.getCategory();
         for(int i=0;i<databases.length;i++){
-            if(dbSigs[i].getCategory() == id.getCategory()){
+            if(dbSigs[i].getCategory() == category){
                 Database db = databases[i];
-                // TODO get DataRow, add Object
+                switch(category){
+                    case ID.CATEGORY_OBJECT:
+                        return getObject(db,id);
+                    case ID.CATEGORY_CHARACTER:
+                        return getCharacter(db,id);
+                    case ID.CATEGORY_RESOURCE:
+                        return getResource(db,id);
+                }
             }
         }
+        return null;
+    }
+
+    GameObject getObject(Database db, ID id){
+        return null;
+    }
+
+    GameCharacter getCharacter(Database db, ID id){
+        return null;
+    }
+
+    GameResource getResource(Database db, ID id){
         return null;
     }
 }

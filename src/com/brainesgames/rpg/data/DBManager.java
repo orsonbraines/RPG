@@ -32,7 +32,7 @@ public class DBManager {
         Scanner sc = new Scanner(System.in);
         while(true){
             System.out.print("\n>>>");
-            String cmd = null;
+            String cmd;
             try {
                 do {
                     cmd = sc.nextLine().trim();
@@ -114,10 +114,54 @@ public class DBManager {
                     System.out.println(db);
                 }
             }
-            else if(cmd.equals("dump")){
-                if(db == null)  System.out.println("No open database to dump");
+            else if(cmd.equals("dump")) {
+                if(db == null) System.out.println("No open database to dump");
                 else System.out.println(db);
             }
+            else if(cmd.length() >= 3 && cmd.substring(0,3).equals("add")){
+                if(db == null){
+                    System.out.println("No open database to add to");
+                    continue;
+                }
+                String[] dataStrings = cmd.split(" ");
+                if(!dataStrings[0].equals("add")){
+                    System.out.println("cmd not recognized. Did you mean add?");
+                    continue;
+                }
+
+                Object[] data = new Object[dataStrings.length - 1];
+                if(data.length != db.getNumFields()){
+                    System.out.println("The number of data entries must mach the number of fields in the database");
+                    continue;
+                }
+                int[] types = new int[data.length];
+                db.getTypes(types);
+                for(int i=0; i<data.length; i++){
+                    switch(types[i]){
+                        case DataHeader.TYPE_STRING:
+                            data[i] = dataStrings[i+1];
+                            break;
+                        case DataHeader.TYPE_DOUBLE:
+                            data[i] = Double.valueOf(dataStrings[i+1]);
+                            break;
+                        case DataHeader.TYPE_INT:
+                            data[i] = Integer.valueOf(dataStrings[i+1]);
+                            break;
+                    }
+                }
+                db.addRow(data);
+            }
+            else if(cmd.equals("close")){
+                db.close();
+                db = null;
+                System.out.println("Database Successfully closed");
+            }
+            else{
+                System.out.println("cmd not recognized");
+            }
+        }
+        if(db != null){
+            db.close();
         }
     }
 }

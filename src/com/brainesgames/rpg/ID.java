@@ -6,9 +6,9 @@ package com.brainesgames.rpg;
 public class ID {
     final static int NONE = -1;
 
-    public static int CATEGORY_OBJECT = 0;
-    public static int CATEGORY_CHARACTER = 1;
-    public static int CATEGORY_RESOURCE = 2;
+    public final static int CATEGORY_OBJECT = 0;
+    public final static int CATEGORY_CHARACTER = 1;
+    public final static int CATEGORY_RESOURCE = 2;
 
     private int id;
 
