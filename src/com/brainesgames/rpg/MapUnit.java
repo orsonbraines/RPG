@@ -8,4 +8,8 @@ import javafx.scene.image.Image;
 public class MapUnit{
     GameResource resource;
     Image texture;
+
+    public Image getTexture() {
+        return texture;
+    }
 }
